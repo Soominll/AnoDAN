@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,13 +30,10 @@ from graph_nets import utils_np
 from graph_nets import utils_tf
 
 import sonnet as snt
-
 import datetime 
+import pickle
 
 import functions as fn
-
-
-# In[ ]:
 
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -50,14 +45,7 @@ if gpus:
     # 프로그램 시작시에 메모리 증가가 설정되어야만 합니다
     print(e)
 
-
-# In[ ]:
-
-
 mirrored_strategy = tf.distribute.MirroredStrategy()
-
-
-# In[ ]:
 
 
 ### Hyperparameters
@@ -74,16 +62,10 @@ num_recurrent_passes = 3
 z_dim = 128
 kappa = 1.0
 
-
-# In[ ]:
-
-
 exp_lst = [3,21,24,26,30,34,44,45,46,49,69,71,77,79,86,91,95,98,99,100,106,107,111,116,118,123,134,137,145,149,150,152,160,163]
 
 
 # ### Graph net
-
-# In[ ]:
 
 
 NUM_LAYERS = 1  # Hard-code number of layers in the edge/node/global models.
@@ -163,9 +145,6 @@ class EncodeProcess(snt.Module):
 
 # ### Real data
 
-# In[ ]:
-
-
 ### Real data list
 
 # Expression & pathway data
@@ -208,9 +187,6 @@ Total_gene = np.unique(Total_gene) # List of unique genes
 print(Total_gene.shape)
 
 
-# In[ ]:
-
-
 ### Total gene expression values for each cell line (entrez id ascending order)
 
 dt = 'Data/Gene_expression_rmNA.csv'
@@ -229,9 +205,6 @@ Total_data = Total_data.T
 Total_data = pd.DataFrame(Total_data, index=index)
 
 
-# In[ ]:
-
-
 ### Total drug-CL list
 
 sensitiveCL = 'Data/List_sensitiveCL.csv'
@@ -247,9 +220,6 @@ idx_r = list(range(0,r_drug_CL.shape[0]))
 total_real_resi_dt = fn.create_data(idx_r, r_drug_CL, Total_data)
 
 
-# In[ ]:
-
-
 # Data for ARP-246 (p53 reactivator)
 
 real_dt = total_real_dt[s_drug_CL['Pubchem.ID'] == 52918385,:] 
@@ -257,9 +227,6 @@ real_resi_dt = total_real_resi_dt[r_drug_CL['Pubchem.ID'] == 52918385,:]
 
 
 # ### Fake data
-
-# In[ ]:
-
 
 gene_path_idx = []
 
@@ -272,10 +239,6 @@ for i in exp_lst:
     gene_path_idx.append(np.array([np.where(g == Total_gene)[0][0] for g in gid])) #index of gid in total_gene
 
 
-# In[ ]:
-
-
-import pickle
 varnamelist = ['all_exp', 'all_path', 'Total_gene_list', 'globals_0', 'senders_0', 'receivers_0', 'edges_0',
                'Total_gene', 'Total_data', 'gene_path_idx', 's_drug_CL', 'r_drug_CL', 'real_dt', 'real_resi_dt']
 savedict = {}
@@ -284,10 +247,7 @@ for vn in varnamelist:
 with open('processed_subpath.p','wb') as f:
     pickle.dump(savedict,f)
     
-
-
-# In[ ]:
-
+# converting data for graph network
 
 def graph_net(data):
     data = tf.transpose(data)
@@ -315,10 +275,8 @@ def graph_net(data):
     return Data_dict_list
 
 
+  
 # ### Models
-
-# In[ ]:
-
 
 ### Generator
 
@@ -353,9 +311,6 @@ class Generator(snt.Module):
         output = self._Dense_logits(hidden)
         
         return output
-
-
-# In[ ]:
 
 
 ### Discriminator
@@ -411,9 +366,6 @@ class Discriminator(snt.Module):
         return output, hidden
 
 
-# In[ ]:
-
-
 ### Encoder
 
 class Encoder(snt.Module):
@@ -451,9 +403,8 @@ class Encoder(snt.Module):
         return output
 
 
+      
 # ### Generator & discriminator training
-
-# In[ ]:
 
 
 ### Optimizers
@@ -461,9 +412,6 @@ class Encoder(snt.Module):
 with mirrored_strategy.scope():
     generator_optimizer = tf.keras.optimizers.Adam(learning_rate, beta_1 = b_1, beta_2 = b_2)
     discriminator_optimizer = tf.keras.optimizers.Adam(learning_rate, beta_1 = b_1, beta_2 = b_2)
-
-
-# In[ ]:
 
 
 ### Discriminator training
@@ -510,9 +458,6 @@ def discriminator_train_step(dt):
     return mean_loss
 
 
-# In[ ]:
-
-
 ### Generator training
 
 @tf.function
@@ -536,9 +481,6 @@ def generator_train_step(dt):
     mean_loss = mirrored_strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis=None)
     
     return mean_loss
-
-
-# In[ ]:
 
 
 ### Training
@@ -586,22 +528,13 @@ def train(dataset, epochs):
     plt.show()
 
 
-# In[ ]:
-
-
 get_ipython().run_cell_magic('time', '', 'with mirrored_strategy.scope():\n    dataset = tf.data.Dataset.from_tensor_slices(real_dt).shuffle(real_dt.shape[0]).batch(global_batch_size, drop_remainder=True)\n    dist_dataset = mirrored_strategy.experimental_distribute_dataset(dataset)\n    train(dist_dataset, epochs)')
 
 
-# ### Encoder training
-
-# In[ ]:
-
+### Encoder optimizer
 
 with mirrored_strategy.scope():
     optimizer = tf.keras.optimizers.RMSprop(learning_rate)
-
-
-# In[ ]:
 
 
 ### Encoder training
@@ -634,9 +567,6 @@ def encoder_train_step(dt):
     return mean_loss, mean_l_dt, mean_l_ft
 
 
-# In[ ]:
-
-
 def anomaly_scoring(dt):
     gen, fake_hid, real_hid = [], [], []
     for shard in range(dt.shape[0] // batch_size):
@@ -663,18 +593,12 @@ def anomaly_scoring(dt):
     return sample_score, gene_score
 
 
-# In[ ]:
-
-
 E = Encoder()
 ckptE = tf.train.Checkpoint(model=E)
 ckpt_manager = tf.train.CheckpointManager(ckptE, log_dir+'/E/kappa', max_to_keep=5)
 
 
-# In[ ]:
-
-
-### Encoder training
+### training
 
 def e_train(dataset, epochs):
     for epoch in range(epochs+1):
@@ -716,17 +640,10 @@ def e_train(dataset, epochs):
         print('Time for step {} is {} sec'.format(epoch + 1, time.time()-start))
         print('Encoder loss is {}'.format(mloss))
 
-
-# In[ ]:
-
-
 get_ipython().run_cell_magic('time', '', 'with mirrored_strategy.scope():\n    dataset = tf.data.Dataset.from_tensor_slices(real_dt).shuffle(real_dt.shape[0]).batch(global_batch_size, drop_remainder=True)\n    dist_dataset = mirrored_strategy.experimental_distribute_dataset(dataset)\n    e_train(dist_dataset, epochs)')
 
 
 # ### Anomaly scoring
-
-# In[ ]:
-
 
 ### Anomaly detection
 
@@ -756,18 +673,11 @@ def anomaly_scoring(dt):
     return sample_score, sample_score2, gene_score
 
 
-# In[ ]:
-
-
 np.set_printoptions(precision=6, suppress=True)
 sen_score, sen_score2, sen_gene = anomaly_scoring(real_dt)
 res_score, res_score2, res_gene = anomaly_scoring(real_resi_dt)
 
 
-# In[ ]:
-
-
-import pickle
 varnamelist = ['sen_score', 'sen_score2', 'sen_gene', 'res_score', 'res_score2', 'res_gene']
 savedict = {}
 for vn in varnamelist:
@@ -775,3 +685,5 @@ for vn in varnamelist:
 with open('processed_subpath_scores.p','wb') as f:
     pickle.dump(savedict,f)
 
+    
+    
