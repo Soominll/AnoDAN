@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
 import umap.umap_ as umap
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -13,9 +10,6 @@ import pandas as pd
 import keras
 import keras.backend as K
 from tensorflow.keras.utils import to_categorical
-
-
-# In[ ]:
 
 
 ### Edges
@@ -78,10 +72,7 @@ def edges(Pathway_data):
     return edges
 
 
-# In[ ]:
-
-
-### Senders & receivers & globals
+### For senders & receivers & globals
 
 def numextract(string):
     number = int(''.join(filter(str.isdigit,string)))
@@ -110,8 +101,7 @@ def others(Pathway_data, Expression_dt):
     return globals_, senders, receivers
 
 
-# In[ ]:
-
+### creating data
 
 def create_data(mb_idx, drug_CL, Total_data):
     x_data = []
@@ -124,8 +114,7 @@ def create_data(mb_idx, drug_CL, Total_data):
     return x_data
 
 
-# In[ ]:
-
+### visualization
 
 # using seaborn to plot UMAP
 
@@ -166,3 +155,5 @@ def umapplot(dataset, dataset_resi, csample, epoch):
    # plt.savefig('umapplot_final.png', dpi=1200)
    # plt.show()
 
+
+    
