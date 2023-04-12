@@ -1,0 +1,7 @@
+"","from","to","type","subtype"
+"2","hsa:27165","hsa:2746","ECrel","compound"
+"21","hsa:27165","hsa:2747","ECrel","compound"
+"3","hsa:2744","hsa:2746","ECrel","compound"
+"4","hsa:2744","hsa:2747","ECrel","compound"
+"5","hsa:4190","hsa:5105","ECrel","compound"
+"6","hsa:4190","hsa:5106","ECrel","compound"
