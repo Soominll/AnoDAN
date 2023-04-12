@@ -3,8 +3,10 @@
 
 This repository provides relevant codes and data to find a combinatorial drug target using our framework called AnoDAN.
 
-- AnoDAN : includes three code files for AnoDAN (Main, functions, anomaly_scoring_analysis)
-- Gene_expression :
+- AnoDAN : includes three code files for AnoDAN (execute Main.py first, then find a combinatorial target using anomaly_scoring_analysis.py)
+- Gene_expression : gene expression files for each pathway
+- Pathway :
+- Data : 
 
 
 ## Key features
