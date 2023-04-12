@@ -11,7 +11,6 @@ import umap.umap_ as umap
 import seaborn as sns
 import matplotlib.pyplot as plt
 import time
-import networkx as nx
 import numpy as np
 import sonnet as snt
 import tensorflow as tf
