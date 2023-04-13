@@ -207,9 +207,8 @@ Total_data = pd.DataFrame(Total_data, index=index)
 
 sensitiveCL = 'Data/List_sensitiveCL.csv'
 sensitiveCL = pd.read_csv(sensitiveCL)
-resistantCL = 'Data/List_resistantCL_TP53mt.csv'
+resistantCL = 'Data/List_resistantCL.csv'
 resistantCL = pd.read_csv(resistantCL)
-resistantCL = resistantCL.loc[resistantCL['Z_IC50']>0.5]
 s_drug_CL = sensitiveCL.iloc[:,[0,2]]
 r_drug_CL = resistantCL.iloc[:,[0,2]]
 idx = list(range(0,s_drug_CL.shape[0]))
