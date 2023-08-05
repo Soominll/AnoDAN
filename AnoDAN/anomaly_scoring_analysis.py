@@ -111,7 +111,7 @@ Expression_dt
 
 # #### LUAD
 
-resistantCL = 'Data/List_resistantCL_TP53mt.csv'
+resistantCL = 'Data/List_resistantCL.csv'
 resistantCL = pd.read_csv(resistantCL)
 resistantCL = resistantCL.loc[resistantCL['Z_IC50']>0.5]
 resistantCL = resistantCL.loc[resistantCL['Pubchem.ID']== 52918385]
